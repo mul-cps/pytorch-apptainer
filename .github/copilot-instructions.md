@@ -17,7 +17,7 @@ This repository is a template for publishing Apptainer (formerly Singularity) co
 - Include appropriate base images (e.g., `docker://pytorch/pytorch` or `docker://nvidia/cuda`)
 
 ### Best Practices
-- **Layer Optimization**: Combine related commands in `%post` section to reduce layer count
+- **Build Optimization**: Combine related commands in `%post` section to reduce build time and complexity
 - **Version Pinning**: Pin PyTorch and dependency versions for reproducibility
 - **CUDA Compatibility**: Ensure CUDA versions match between base image and PyTorch
 - **Documentation**: Document environment variables and expected usage in comments
