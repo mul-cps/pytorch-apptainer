@@ -73,8 +73,8 @@ jobs:
       - name: check oras
         run: oras version
         
-      - name: Clear disk space
-        uses: uw-psych/apptainer-actions/make-disk-space@main
+      # - name: Clear disk space
+      #   uses: uw-psych/apptainer-actions/make-disk-space@main
         
       - name: Log in to GitHub Container Registry
         run: |
@@ -100,8 +100,9 @@ jobs:
       - name: Build and push Apptainer image
         uses: uw-psych/apptainer-actions/build-and-push@main
         with:
-          deffile: Singularity
+          deffile: pytorch #Singularity
           image-version: ${{ env.IMAGE_VERSION }}
+          name: pytorch
 
       - name: Push to GitHub Container Registry
         if: github.event_name != 'pull_request'
