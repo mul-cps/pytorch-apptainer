@@ -10,6 +10,12 @@ name: Build and Publish Apptainer Image
       - main
   workflow_dispatch:
 
+env:
+  PYTORCH_VERSION: "2.4.0"
+  CUDA_VERSION: "12.1"
+  CUDNN_VERSION: "9"
+  APPTAINER_VERSION: "1.3.0"
+
 jobs:
   build-apptainer-image:
     runs-on: ubuntu-latest
@@ -24,7 +30,7 @@ jobs:
       - name: Set up Apptainer
         uses: eWaterCycle/setup-apptainer@v2
         with:
-          apptainer-version: 1.3.0
+          apptainer-version: ${{ env.APPTAINER_VERSION }}
 
       - name: Log in to GitHub Container Registry
         run: |
@@ -39,10 +45,10 @@ jobs:
       - name: Push to GitHub Container Registry
         if: github.event_name != 'pull_request'
         run: |
+          IMAGE_BASE="oras://ghcr.io/${{ github.repository }}/pytorch"
           apptainer push pytorch.sif \
-            oras://ghcr.io/${{ github.repository }}/pytorch:2.4.0
-          apptainer push pytorch.sif \
-            oras://ghcr.io/${{ github.repository }}/pytorch:latest
+            ${IMAGE_BASE}:${{ env.PYTORCH_VERSION }}
+          apptainer push pytorch.sif ${IMAGE_BASE}:latest
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
