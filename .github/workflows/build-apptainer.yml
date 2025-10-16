@@ -66,6 +66,13 @@ jobs:
         uses: eWaterCycle/setup-apptainer@main
         # with:
         #   apptainer-version: ${{ env.APPTAINER_VERSION }}
+
+      - name: setup oras
+        uses: oras-project/setup-oras@v1
+        
+      - name: check oras
+        run: oras version
+        
       - name: Clear disk space
         uses: uw-psych/apptainer-actions/make-disk-space@main
         
