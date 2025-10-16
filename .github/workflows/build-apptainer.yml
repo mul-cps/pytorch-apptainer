@@ -27,40 +27,40 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Check for mount namespace / userns support
-        id: userns-check
-        run: |
-          echo "Checking for required kernel/user namespace capabilities..."
-          # If kernel exposes unprivileged_userns_clone use it
-          if [ -f /proc/sys/kernel/unprivileged_userns_clone ]; then
-            if [ "$(cat /proc/sys/kernel/unprivileged_userns_clone)" -eq 1 ]; then
-              echo "User namespaces supported (unprivileged_userns_clone=1). Continuing."
-            else
-              echo "User namespaces are disabled (unprivileged_userns_clone=0). Skipping Apptainer build."
-              echo "To run this workflow, use a self-hosted runner with user namespace support."
-              exit 0
-            fi
-          else
-            # Fallback: try a harmless unshare to detect mount namespace availability
-            if command -v unshare >/dev/null 2>&1; then
-              if unshare -m true >/dev/null 2>&1; then
-                echo "unshare succeeded. Continuing."
-              else
-                echo "unshare failed (no mount namespace privileges). Skipping Apptainer build."
-                echo "To run this workflow, use a self-hosted runner with appropriate privileges."
-                exit 0
-              fi
-            else
-              echo "Cannot detect userns support (unshare not available). Attempting Apptainer probe..."
-              if command -v apptainer >/dev/null 2>&1 && apptainer --version >/dev/null 2>&1; then
-                echo "Apptainer present and usable. Continuing."
-              else
-                echo "Apptainer not installed or cannot run without privileges. Skipping Apptainer build."
-                echo "To run this workflow, use a self-hosted runner with Apptainer installed and privileges."
-                exit 0
-              fi
-            fi
-          fi
+      # - name: Check for mount namespace / userns support
+      #   id: userns-check
+      #   run: |
+      #     echo "Checking for required kernel/user namespace capabilities..."
+      #     # If kernel exposes unprivileged_userns_clone use it
+      #     if [ -f /proc/sys/kernel/unprivileged_userns_clone ]; then
+      #       if [ "$(cat /proc/sys/kernel/unprivileged_userns_clone)" -eq 1 ]; then
+      #         echo "User namespaces supported (unprivileged_userns_clone=1). Continuing."
+      #       else
+      #         echo "User namespaces are disabled (unprivileged_userns_clone=0). Skipping Apptainer build."
+      #         echo "To run this workflow, use a self-hosted runner with user namespace support."
+      #         exit 0
+      #       fi
+      #     else
+      #       # Fallback: try a harmless unshare to detect mount namespace availability
+      #       if command -v unshare >/dev/null 2>&1; then
+      #         if unshare -m true >/dev/null 2>&1; then
+      #           echo "unshare succeeded. Continuing."
+      #         else
+      #           echo "unshare failed (no mount namespace privileges). Skipping Apptainer build."
+      #           echo "To run this workflow, use a self-hosted runner with appropriate privileges."
+      #           exit 0
+      #         fi
+      #       else
+      #         echo "Cannot detect userns support (unshare not available). Attempting Apptainer probe..."
+      #         if command -v apptainer >/dev/null 2>&1 && apptainer --version >/dev/null 2>&1; then
+      #           echo "Apptainer present and usable. Continuing."
+      #         else
+      #           echo "Apptainer not installed or cannot run without privileges. Skipping Apptainer build."
+      #           echo "To run this workflow, use a self-hosted runner with Apptainer installed and privileges."
+      #           exit 0
+      #         fi
+      #       fi
+      #     fi
 
       - name: Set up Apptainer
         uses: eWaterCycle/setup-apptainer@v2
