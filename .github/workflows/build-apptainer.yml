@@ -63,19 +63,38 @@ jobs:
       #     fi
 
       - name: Set up Apptainer
-        uses: eWaterCycle/setup-apptainer@v2
-        with:
-          apptainer-version: ${{ env.APPTAINER_VERSION }}
-
+        uses: eWaterCycle/setup-apptainer@main
+        # with:
+        #   apptainer-version: ${{ env.APPTAINER_VERSION }}
+      - name: Clear disk space
+        uses: uw-psych/apptainer-actions/make-disk-space@main
+        
       - name: Log in to GitHub Container Registry
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | \
             apptainer remote login -u ${{ github.actor }} \
             --password-stdin oras://ghcr.io
 
-      - name: Build Apptainer image
+      # - name: Build Apptainer image
+      #   run: |
+      #     apptainer build pytorch.sif pytorch.def
+
+      - name: Get version
+        shell: bash
         run: |
-          apptainer build pytorch.sif pytorch.def
+          if [[ "${GITHUB_REF_TYPE:-}" == "tag" ]]; then
+            case "${GITHUB_REF_NAME:-}" in
+              v?*) IMAGE_VERSION="${GITHUB_REF_NAME#v}";;
+              *) echo "Invalid tag: \"${GITHUB_REF_NAME:-}\"" >&2; exit 1;;
+            esac
+            echo "IMAGE_VERSION=${IMAGE_VERSION}" >> "${GITHUB_ENV}"
+          fi
+          
+      - name: Build and push Apptainer image
+        uses: uw-psych/apptainer-actions/build-and-push@main
+        with:
+          deffile: Singularity
+          image-version: ${{ env.IMAGE_VERSION }}
 
       - name: Push to GitHub Container Registry
         if: github.event_name != 'pull_request'
