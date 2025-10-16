@@ -1,0 +1,93 @@
+---
+name: Build and Publish Apptainer Image
+
+'on':
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  PYTORCH_VERSION: "2.4.0"
+  CUDA_VERSION: "12.1"
+  CUDNN_VERSION: "9"
+  APPTAINER_VERSION: "1.3.0"
+
+jobs:
+  build-apptainer-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for mount namespace / userns support
+        id: userns-check
+        run: |
+          echo "Checking for required kernel/user namespace capabilities..."
+          # If kernel exposes unprivileged_userns_clone use it
+          if [ -f /proc/sys/kernel/unprivileged_userns_clone ]; then
+            if [ "$(cat /proc/sys/kernel/unprivileged_userns_clone)" -eq 1 ]; then
+              echo "User namespaces supported (unprivileged_userns_clone=1). Continuing."
+            else
+              echo "User namespaces are disabled (unprivileged_userns_clone=0). Skipping Apptainer build."
+              echo "To run this workflow, use a self-hosted runner with user namespace support."
+              exit 0
+            fi
+          else
+            # Fallback: try a harmless unshare to detect mount namespace availability
+            if command -v unshare >/dev/null 2>&1; then
+              if unshare -m true >/dev/null 2>&1; then
+                echo "unshare succeeded. Continuing."
+              else
+                echo "unshare failed (no mount namespace privileges). Skipping Apptainer build."
+                echo "To run this workflow, use a self-hosted runner with appropriate privileges."
+                exit 0
+              fi
+            else
+              echo "Cannot detect userns support (unshare not available). Attempting Apptainer probe..."
+              if command -v apptainer >/dev/null 2>&1 && apptainer --version >/dev/null 2>&1; then
+                echo "Apptainer present and usable. Continuing."
+              else
+                echo "Apptainer not installed or cannot run without privileges. Skipping Apptainer build."
+                echo "To run this workflow, use a self-hosted runner with Apptainer installed and privileges."
+                exit 0
+              fi
+            fi
+          fi
+
+      - name: Set up Apptainer
+        uses: eWaterCycle/setup-apptainer@v2
+        with:
+          apptainer-version: ${{ env.APPTAINER_VERSION }}
+
+      - name: Log in to GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | \
+            apptainer remote login -u ${{ github.actor }} \
+            --password-stdin oras://ghcr.io
+
+      - name: Build Apptainer image
+        run: |
+          apptainer build pytorch.sif pytorch.def
+
+      - name: Push to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        run: |
+          IMAGE_BASE="oras://ghcr.io/${{ github.repository }}/pytorch"
+          apptainer push pytorch.sif \
+            ${IMAGE_BASE}:${{ env.PYTORCH_VERSION }}
+          apptainer push pytorch.sif ${IMAGE_BASE}:latest
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytorch-apptainer-image
+          path: pytorch.sif
+          retention-days: 7
