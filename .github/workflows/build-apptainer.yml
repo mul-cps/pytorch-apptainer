@@ -100,7 +100,7 @@ jobs:
       - name: Build and push Apptainer image
         uses: uw-psych/apptainer-actions/build-and-push@main
         with:
-          deffile: pytorch #Singularity
+          deffile: pytorch.def #Singularity
           image-version: ${{ env.IMAGE_VERSION }}
           name: pytorch
 
