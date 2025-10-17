@@ -1,6 +1,6 @@
 # 🧩 pytorch-apptainer
 
-[![Build](https://github.com/mul-cps/pytorch-apptainer/actions/workflows/build.yml/badge.svg)](https://github.com/mul-cps/pytorch-apptainer/actions/workflows/build.yml)
+[![Build](https://github.com/mul-cps/pytorch-apptainer/actions/workflows/build-apptainer.yml/badge.svg)](https://github.com/mul-cps/pytorch-apptainer/actions/workflows/build-apptainer.yml)
 [![Container Registry](https://img.shields.io/badge/registry-ghcr.io-blue?logo=github)](https://ghcr.io/mul-cps/pytorch-apptainer)
 [![Apptainer](https://img.shields.io/badge/Apptainer-%F0%9F%94%97-green)](https://apptainer.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
