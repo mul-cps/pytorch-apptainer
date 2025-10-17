@@ -22,7 +22,7 @@ For new users or first-time cluster runs:
 2. **Transfer to the cluster**
 
    ```bash
-   scp pytorch_24.06.sif user@hpc-login1:/home/user/
+   scp pytorch_24.06.sif user@hpc-login1.unileoben.ac.at:/home/user/
    ```
 
 3. **Run inside the container**
@@ -63,14 +63,14 @@ Instead, build or download locally and transfer the image to the cluster.
 
 ```bash
 apptainer build pytorch_24.06.sif apptainer.def
-scp pytorch_24.06.sif user@hpc-login1:/home/user/
+scp pytorch_24.06.sif user@hpc-login1.unileoben.ac.at:/home/user/
 ```
 
 ### ⬇️ Option B — Download from GHCR via ORAS
 
 ```bash
 apptainer pull oras://ghcr.io/mul-cps/pytorch-apptainer/pytorch:latest
-scp pytorch_24.06.sif user@hpc-login1:/home/user/
+scp pytorch_24.06.sif user@hpc-login1.unileoben.ac.at:/home/user/
 ```
 
 ### ▶️ Run on the cluster
@@ -112,10 +112,10 @@ Typical workflow:
 
 ```bash
 # Connect to the cluster
-ssh user@hpc-login1
+ssh user@hpc-login1.unileoben.ac.at
 
 # Copy your local image to the cluster
-scp ./pytorch_24.06.sif user@hpc-login1:/home/user/
+scp ./pytorch_24.06.sif user@hpc-login1.unileoben.ac.at:/home/user/
 ```
 
 ---
