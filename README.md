@@ -159,13 +159,9 @@ Save as `torch_ddp_bench.sbatch`:
 #SBATCH -p p2gpu
 #SBATCH --qos=p2gpu
 #SBATCH -N 2
-#SBATCH --gpus-per-node=4
-#SBATCH --ntasks-per-node=4
-#SBATCH --cpus-per-task=4
 #SBATCH --time=00:10:00
 #SBATCH -o ddp_bench_%j.out
 #SBATCH -e ddp_bench_%j.err
-#SBATCH --exclusive
 
 echo "Nodes: $SLURM_NODELIST"
 echo "Tasks per node: $SLURM_NTASKS_PER_NODE"
