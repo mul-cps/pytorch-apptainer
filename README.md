@@ -87,6 +87,10 @@ apptainer exec --nv ~/pytorch_24.06.sif python -c "import torch; print(torch.__v
 
 **Slurm** is the workload manager used on most HPC clusters.
 
+For MUL Employees, refer to
+https://git.unileoben.ac.at/mul-hpc-cluster/hpc-cluster-training
+to find out how to connect to the MUL HPC Cluster.
+
 Typical workflow:
 
 1. **Connect** via SSH to a login node
