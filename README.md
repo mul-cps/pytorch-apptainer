@@ -5,7 +5,32 @@
 [![Apptainer](https://img.shields.io/badge/Apptainer-%F0%9F%94%97-green)](https://apptainer.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
 
-> 🧠 Template for publishing and using **Apptainer/Singularity** images derived from official **PyTorch** Docker releases.
+> 🧠 Template for building and using **Apptainer/Singularity** images derived from official **PyTorch** Docker releases.
+
+---
+
+## ⚡ Quick Start
+
+For new users or first-time cluster runs:
+
+1. **Build or download the container locally**
+
+   ```bash
+   apptainer pull oras://ghcr.io/mul-cps/pytorch-apptainer/pytorch:latest
+   ```
+
+2. **Transfer to the cluster**
+
+   ```bash
+   scp pytorch_24.06.sif user@hpc-login1:/home/user/
+   ```
+
+3. **Run inside the container**
+
+   ```bash
+   module load apptainer/1.1.7-gcc-13.2.0-36exqw4
+   apptainer exec --nv ~/pytorch_24.06.sif python -c "import torch; print(torch.__version__)"
+   ```
 
 ---
 
@@ -31,8 +56,8 @@ The images are hosted on **GitHub Container Registry (GHCR)** and can be used di
 
 ## ⚙️ Recommended Usage Workflow
 
-Directly pulling from the registry on the cluster can **hang or fail** due to firewall or proxy limits.
-Instead, build or download locally, then transfer the image to the cluster.
+Directly pulling from the registry **on the cluster** can hang or fail due to proxy/firewall limits.
+Instead, build or download locally and transfer the image to the cluster.
 
 ### 🔧 Option A — Build locally
 
@@ -82,10 +107,10 @@ Typical workflow:
 # 🔑 Connecting & Moving the Image
 
 ```bash
-# 1) Connect to the login node
+# Connect to the cluster
 ssh user@hpc-login1
 
-# 2) Copy your local image to the cluster
+# Copy your local image to the cluster
 scp ./pytorch_24.06.sif user@hpc-login1:/home/user/
 ```
 
@@ -112,7 +137,7 @@ Verify GPU visibility and multi-node allocation:
 srun -N2 -p p2gpu --qos=p2gpu --wait=0 nvidia-smi
 ```
 
-This checks that
+This checks that:
 
 * Two nodes were allocated
 * GPUs are visible on each node
@@ -211,14 +236,14 @@ PY
 
 ## 🧩 Explanation of Key Steps
 
-| Step                                    | Purpose                                                 |
-| --------------------------------------- | ------------------------------------------------------- |
-| `--gpus-per-node` + `--ntasks-per-node` | One rank per GPU → simpler device mapping               |
-| `MASTER_ADDR/PORT`                      | Rendezvous endpoint for all distributed ranks           |
-| `--mpi=pmix`                            | Exports rank/env info (`SLURM_PROCID`, `SLURM_LOCALID`) |
-| `apptainer exec --nv`                   | Mounts host GPU devices & drivers inside the container  |
-| `OMP_NUM_THREADS=1`                     | Prevents CPU oversubscription                           |
-| `NCCL_*` envs                           | Control verbosity, async errors, and comms stability    |
+| Step                                    | Purpose                                       |
+| --------------------------------------- | --------------------------------------------- |
+| `--gpus-per-node` + `--ntasks-per-node` | Ensures 1 GPU per rank for clean mapping      |
+| `MASTER_ADDR/PORT`                      | Rendezvous endpoint for DDP                   |
+| `--mpi=pmix`                            | Exports rank/env info to PyTorch              |
+| `apptainer exec --nv`                   | Passes through host GPUs & drivers            |
+| `OMP_NUM_THREADS=1`                     | Prevents CPU oversubscription                 |
+| `NCCL_*` envs                           | Improve communication stability and debugging |
 
 ---
 
@@ -232,9 +257,9 @@ tail -f ddp_bench_<JOBID>.out          # View output live
 
 If you see NCCL timeouts or hangs:
 
-* Test first with `-N 1` (single node)
+* Test with `-N 1` (single node)
 * Ensure `--gpus-per-node` = `--ntasks-per-node`
-* Set `NCCL_DEBUG=INFO` for diagnostics
+* Set `NCCL_DEBUG=INFO` for detailed logs
 
 ---
 
